@@ -139,19 +139,19 @@ export default function CalendarApp({ calendarioId, token }) {
   const aplicarFerramenta = useCallback((key) => {
     if (!podeEditar || !ferramentaAtiva) return;
     if (ferramentaAtiva.kind === "tipo") {
-      if (ferramentaAtiva.tipo === "sabado_letivo") {
-        setDiaSabadoPendente(key);
-        return;
+      let contaComoFinal = ferramentaAtiva.contaComo ?? null;
+      if ((ferramentaAtiva.tipo === "sabado_letivo" || ferramentaAtiva.tipo === "substituicao") && contaComoFinal === null) {
+        contaComoFinal = 0; // Padrão: Segunda-feira
       }
-      if (ferramentaAtiva.tipo === "substituicao") {
-        setDiaSubstituicaoPendente(key);
-        return;
+      let rotuloFinal = ferramentaAtiva.rotulo || null;
+      if (ferramentaAtiva.tipo === "conselho" && !rotuloFinal) {
+        rotuloFinal = "Conselho de Classe";
       }
-      if (ferramentaAtiva.tipo === "conselho") {
-        setDiaConselhoPendente(key);
-        return;
-      }
-      atualizarDiaOverride(key, { tipo: ferramentaAtiva.tipo, contaComo: ferramentaAtiva.contaComo ?? null, rotulo: null });
+      atualizarDiaOverride(key, {
+        tipo: ferramentaAtiva.tipo,
+        contaComo: contaComoFinal,
+        rotulo: rotuloFinal,
+      });
     } else if (ferramentaAtiva.kind === "marco") {
       setMarcosPorDia((prev) => {
         const next = {};
@@ -188,7 +188,7 @@ export default function CalendarApp({ calendarioId, token }) {
       return;
     }
     aplicarFerramenta(key);
-    if (!["sabado_letivo", "substituicao", "conselho"].includes(ferramentaAtiva?.tipo) && ferramentaAtiva.kind !== "marco") {
+    if (ferramentaAtiva.kind !== "marco") {
       pintandoRef.current = true;
     }
   }, [podeEditar, ferramentaAtiva, aplicarFerramenta]);

@@ -34,6 +34,8 @@ export default function Toolbar({ ferramentaAtiva, onSelecionar, tipoCalendario 
     }
     if (key === "sabado_letivo" || key === "substituicao") {
       onSelecionar({ kind: "tipo", tipo: key, contaComo: 0 });
+    } else if (key === "conselho") {
+      onSelecionar({ kind: "tipo", tipo: key, contaComo: null, rotulo: "Conselho de Classe" });
     } else {
       onSelecionar({ kind: "tipo", tipo: key, contaComo: null });
     }
@@ -121,6 +123,23 @@ export default function Toolbar({ ferramentaAtiva, onSelecionar, tipoCalendario 
             {DIAS_SEMANA_PT.slice(0, 5).map((nome, i) => (
               <option key={i} value={i}>{nome}-feira</option>
             ))}
+          </select>
+        </div>
+      )}
+
+      {tipoAtivoKey === "conselho" && (
+        <div className="sketchup-sub-box">
+          <label className="sketchup-label">Tipo de Conselho:</label>
+          <select
+            value={ferramentaAtiva.rotulo || "Conselho de Classe"}
+            onChange={(e) => onSelecionar({ ...ferramentaAtiva, rotulo: e.target.value })}
+          >
+            <option value="Conselho de Classe">Conselho de Classe</option>
+            <option value="Conselho Pedagógico (1º Bimestre)">Conselho Pedagógico (1º Bimestre)</option>
+            <option value="Conselho Pedagógico (2º Bimestre)">Conselho Pedagógico (2º Bimestre)</option>
+            <option value="Conselho Pedagógico (3º Bimestre)">Conselho Pedagógico (3º Bimestre)</option>
+            <option value="Conselho Pedagógico (4º Bimestre)">Conselho Pedagógico (4º Bimestre)</option>
+            <option value="Conselho Final">Conselho Final</option>
           </select>
         </div>
       )}
