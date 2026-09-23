@@ -68,8 +68,16 @@ export default function CalendarApp({ calendarioId, token }) {
     [validacao.periodos, dias]
   );
 
+  const [diaSabadoPendente, setDiaSabadoPendente] = useState(null);
+  const [diaConselhoPendente, setDiaConselhoPendente] = useState(null);
+
   useEffect(() => {
-    function onUp() { pintandoRef.current = false; }
+    function onUp() {
+      if (pintandoRef.current) {
+        pintandoRef.current = false;
+        setFerramentaAtiva(null);
+      }
+    }
     window.addEventListener("mouseup", onUp);
     return () => window.removeEventListener("mouseup", onUp);
   }, []);
@@ -115,6 +123,14 @@ export default function CalendarApp({ calendarioId, token }) {
   const aplicarFerramenta = useCallback((key) => {
     if (!podeEditar || !ferramentaAtiva) return;
     if (ferramentaAtiva.kind === "tipo") {
+      if (ferramentaAtiva.tipo === "sabado_letivo") {
+        setDiaSabadoPendente(key);
+        return;
+      }
+      if (ferramentaAtiva.tipo === "conselho") {
+        setDiaConselhoPendente(key);
+        return;
+      }
       setOverrides((prevOverrides) => {
         const nextOverrides = {
           ...prevOverrides,
@@ -171,6 +187,38 @@ export default function CalendarApp({ calendarioId, token }) {
       aplicarFerramenta(key);
     }
   }, [podeEditar, ferramentaAtiva, aplicarFerramenta]);
+
+  function confirmarSabadoLetivo(wdIndex) {
+    if (!diaSabadoPendente) return;
+    const key = diaSabadoPendente;
+    setOverrides((prevOverrides) => {
+      const nextOverrides = {
+        ...prevOverrides,
+        [key]: { tipo: "sabado_letivo", contaComo: Number(wdIndex), rotulo: null },
+      };
+      setMarcosPorDia((prevMarcos) =>
+        autoAjustarMarcos(prevMarcos, nextOverrides, ano, tipo, metasIndividuais(tipo))
+      );
+      return nextOverrides;
+    });
+    setDiaSabadoPendente(null);
+  }
+
+  function confirmarConselho(rotuloConselho) {
+    if (!diaConselhoPendente) return;
+    const key = diaConselhoPendente;
+    setOverrides((prevOverrides) => {
+      const nextOverrides = {
+        ...prevOverrides,
+        [key]: { tipo: "conselho", contaComo: null, rotulo: rotuloConselho },
+      };
+      setMarcosPorDia((prevMarcos) =>
+        autoAjustarMarcos(prevMarcos, nextOverrides, ano, tipo, metasIndividuais(tipo))
+      );
+      return nextOverrides;
+    });
+    setDiaConselhoPendente(null);
+  }
 
   async function exportar() {
     setExportando(true);
@@ -371,6 +419,46 @@ export default function CalendarApp({ calendarioId, token }) {
           onClose={() => setDialogoAberto(null)}
           onRestaurado={(dados) => aplicarEstadoCompleto(dados)}
         />
+      )}
+
+      {diaSabadoPendente && (
+        <div className="modal-overlay" onClick={() => setDiaSabadoPendente(null)}>
+          <div className="modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
+            <h3>Sábado Letivo</h3>
+            <p>A qual dia da semana este sábado letivo se refere?</p>
+            <div className="dialog-button-grid">
+              {["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira"].map((label, idx) => (
+                <button key={idx} className="btn btn-secondary btn-full" onClick={() => confirmarSabadoLetivo(idx)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <button className="btn btn-ghost btn-sm btn-full mt-12" onClick={() => setDiaSabadoPendente(null)}>Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      {diaConselhoPendente && (
+        <div className="modal-overlay" onClick={() => setDiaConselhoPendente(null)}>
+          <div className="modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
+            <h3>Conselho de Classe</h3>
+            <p>Selecione a categoria do Conselho de Classe:</p>
+            <div className="dialog-button-grid">
+              {[
+                "Conselho Pedagógico (1º Bimestre)",
+                "Conselho Pedagógico (2º Bimestre)",
+                "Conselho Pedagógico (3º Bimestre)",
+                "Conselho Pedagógico (4º Bimestre)",
+                "Conselho Final",
+              ].map((label, idx) => (
+                <button key={idx} className="btn btn-primary btn-full" style={{ background: "#B45F06", borderColor: "#8A4703", color: "#FFFFFF" }} onClick={() => confirmarConselho(label)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <button className="btn btn-ghost btn-sm btn-full mt-12" onClick={() => setDiaConselhoPendente(null)}>Cancelar</button>
+          </div>
+        </div>
       )}
     </div>
   );
