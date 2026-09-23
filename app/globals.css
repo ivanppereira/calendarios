@@ -1277,17 +1277,36 @@ input, select {
   font-size: 0.7em;
 }
 
-/* Toolbar Grid Row para pares de Início/Fim */
+/* Toolbar Grid Row para pares de Início/Fim com Rótulo */
+.sketchup-marcos-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sketchup-periodo-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sketchup-periodo-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
 .sketchup-grid-row {
   display: flex;
   gap: 4px;
-  grid-column: span 2;
   width: 100%;
 }
 
 .sketchup-grid-row .sketchup-btn {
   flex: 1;
-  height: 36px;
+  height: 34px;
 }
 
 .sketchup-btn.btn-flag-start {
@@ -1298,12 +1317,6 @@ input, select {
 .sketchup-btn.btn-flag-end {
   color: #ef4444 !important;
   border-color: rgba(239, 68, 68, 0.4) !important;
-}
-
-.sketchup-btn .stack-num {
-  color: #ffffff !important;
-  font-weight: 900;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 /* Modais e diálogos */

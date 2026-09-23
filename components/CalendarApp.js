@@ -70,6 +70,7 @@ export default function CalendarApp({ calendarioId, token }) {
 
   const [diaSabadoPendente, setDiaSabadoPendente] = useState(null);
   const [diaConselhoPendente, setDiaConselhoPendente] = useState(null);
+  const [diaSubstituicaoPendente, setDiaSubstituicaoPendente] = useState(null);
 
   useEffect(() => {
     function onUp() {
@@ -93,6 +94,21 @@ export default function CalendarApp({ calendarioId, token }) {
       return next;
     });
   }, [setOverrides]);
+
+  const atualizarDiaOverride = useCallback((key, overrideVal) => {
+    if (!podeEditar) return;
+    setOverrides((prevOverrides) => {
+      const nextOverrides = { ...prevOverrides };
+      if (!overrideVal) delete nextOverrides[key];
+      else nextOverrides[key] = overrideVal;
+
+      setMarcosPorDia((prevMarcos) => {
+        return autoAjustarMarcos(prevMarcos, nextOverrides, ano, tipo, metasIndividuais(tipo));
+      });
+
+      return nextOverrides;
+    });
+  }, [podeEditar, setOverrides, setMarcosPorDia, ano, tipo]);
 
   const salvarDia = useCallback((key, novo) => {
     if (!podeEditar) return;
@@ -127,20 +143,15 @@ export default function CalendarApp({ calendarioId, token }) {
         setDiaSabadoPendente(key);
         return;
       }
+      if (ferramentaAtiva.tipo === "substituicao") {
+        setDiaSubstituicaoPendente(key);
+        return;
+      }
       if (ferramentaAtiva.tipo === "conselho") {
         setDiaConselhoPendente(key);
         return;
       }
-      setOverrides((prevOverrides) => {
-        const nextOverrides = {
-          ...prevOverrides,
-          [key]: { tipo: ferramentaAtiva.tipo, contaComo: ferramentaAtiva.contaComo ?? null, rotulo: null },
-        };
-        setMarcosPorDia((prevMarcos) =>
-          autoAjustarMarcos(prevMarcos, nextOverrides, ano, tipo, metasIndividuais(tipo))
-        );
-        return nextOverrides;
-      });
+      atualizarDiaOverride(key, { tipo: ferramentaAtiva.tipo, contaComo: ferramentaAtiva.contaComo ?? null, rotulo: null });
     } else if (ferramentaAtiva.kind === "marco") {
       setMarcosPorDia((prev) => {
         const next = {};
@@ -168,7 +179,7 @@ export default function CalendarApp({ calendarioId, token }) {
         marcarComoLetivo(key, key, categoriaInfo(ferramentaAtiva.categoria).label);
       }
     }
-  }, [podeEditar, ferramentaAtiva, marcarComoLetivo, setOverrides, setMarcosPorDia, setAtividades, ano, tipo, overrides]);
+  }, [podeEditar, ferramentaAtiva, marcarComoLetivo, setAtividades, ano, tipo, overrides, atualizarDiaOverride]);
 
   const handleDayMouseDown = useCallback((key) => {
     if (!podeEditar) return;
@@ -177,7 +188,7 @@ export default function CalendarApp({ calendarioId, token }) {
       return;
     }
     aplicarFerramenta(key);
-    if (ferramentaAtiva.kind !== "marco") {
+    if (!["sabado_letivo", "substituicao", "conselho"].includes(ferramentaAtiva?.tipo) && ferramentaAtiva.kind !== "marco") {
       pintandoRef.current = true;
     }
   }, [podeEditar, ferramentaAtiva, aplicarFerramenta]);
@@ -190,33 +201,19 @@ export default function CalendarApp({ calendarioId, token }) {
 
   function confirmarSabadoLetivo(wdIndex) {
     if (!diaSabadoPendente) return;
-    const key = diaSabadoPendente;
-    setOverrides((prevOverrides) => {
-      const nextOverrides = {
-        ...prevOverrides,
-        [key]: { tipo: "sabado_letivo", contaComo: Number(wdIndex), rotulo: null },
-      };
-      setMarcosPorDia((prevMarcos) =>
-        autoAjustarMarcos(prevMarcos, nextOverrides, ano, tipo, metasIndividuais(tipo))
-      );
-      return nextOverrides;
-    });
+    atualizarDiaOverride(diaSabadoPendente, { tipo: "sabado_letivo", contaComo: Number(wdIndex), rotulo: null });
     setDiaSabadoPendente(null);
+  }
+
+  function confirmarSubstituicao(wdIndex) {
+    if (!diaSubstituicaoPendente) return;
+    atualizarDiaOverride(diaSubstituicaoPendente, { tipo: "substituicao", contaComo: Number(wdIndex), rotulo: null });
+    setDiaSubstituicaoPendente(null);
   }
 
   function confirmarConselho(rotuloConselho) {
     if (!diaConselhoPendente) return;
-    const key = diaConselhoPendente;
-    setOverrides((prevOverrides) => {
-      const nextOverrides = {
-        ...prevOverrides,
-        [key]: { tipo: "conselho", contaComo: null, rotulo: rotuloConselho },
-      };
-      setMarcosPorDia((prevMarcos) =>
-        autoAjustarMarcos(prevMarcos, nextOverrides, ano, tipo, metasIndividuais(tipo))
-      );
-      return nextOverrides;
-    });
+    atualizarDiaOverride(diaConselhoPendente, { tipo: "conselho", contaComo: null, rotulo: rotuloConselho });
     setDiaConselhoPendente(null);
   }
 
@@ -434,6 +431,23 @@ export default function CalendarApp({ calendarioId, token }) {
               ))}
             </div>
             <button className="btn btn-ghost btn-sm btn-full mt-12" onClick={() => setDiaSabadoPendente(null)}>Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      {diaSubstituicaoPendente && (
+        <div className="modal-overlay" onClick={() => setDiaSubstituicaoPendente(null)}>
+          <div className="modal-content modal-sm" onClick={(e) => e.stopPropagation()}>
+            <h3>Substituição de Dia</h3>
+            <p>Este dia substitui qual dia da semana?</p>
+            <div className="dialog-button-grid">
+              {["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira"].map((label, idx) => (
+                <button key={idx} className="btn btn-secondary btn-full" onClick={() => confirmarSubstituicao(idx)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <button className="btn btn-ghost btn-sm btn-full mt-12" onClick={() => setDiaSubstituicaoPendente(null)}>Cancelar</button>
           </div>
         </div>
       )}

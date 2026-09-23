@@ -126,48 +126,50 @@ export default function Toolbar({ ferramentaAtiva, onSelecionar, tipoCalendario 
       )}
 
       <div className="sketchup-section-label">Marcos (Início / Fim)</div>
-      <div className="sketchup-grid">
-        <button
-          type="button"
-          className={"sketchup-btn btn-outline" + (marcoAtivoKey === "inicio_ano" ? " active" : "")}
-          onClick={() => clicarMarco("inicio_ano")}
-          title="Início do ano letivo"
-        >
-          <i className="fa-solid fa-play"></i>
-        </button>
-        <button
-          type="button"
-          className={"sketchup-btn btn-outline" + (marcoAtivoKey === "fim_ano" ? " active" : "")}
-          onClick={() => clicarMarco("fim_ano")}
-          title="Fim do ano letivo"
-        >
-          <i className="fa-solid fa-stop"></i>
-        </button>
+      <div className="sketchup-marcos-container">
+        <div className="sketchup-periodo-block">
+          <div className="sketchup-periodo-label">Ano Letivo</div>
+          <div className="sketchup-grid-row">
+            <button
+              type="button"
+              className={"sketchup-btn btn-outline btn-flag-start" + (marcoAtivoKey === "inicio_ano" ? " active" : "")}
+              onClick={() => clicarMarco("inicio_ano")}
+              title="Início do ano letivo"
+            >
+              <i className="fa-solid fa-flag"></i>
+            </button>
+            <button
+              type="button"
+              className={"sketchup-btn btn-outline btn-flag-end" + (marcoAtivoKey === "fim_ano" ? " active" : "")}
+              onClick={() => clicarMarco("fim_ano")}
+              title="Fim do ano letivo"
+            >
+              <i className="fa-solid fa-flag-checkered"></i>
+            </button>
+          </div>
+        </div>
 
         {cfg.nomesPeriodo.map((nome, i) => (
-          <div key={`periodo-row-${i}`} className="sketchup-grid-row">
-            <button
-              type="button"
-              className={"sketchup-btn btn-outline btn-flag-start" + (marcoAtivoKey === `inicio_periodo_${i}` ? " active" : "")}
-              onClick={() => clicarMarco(`inicio_periodo_${i}`)}
-              title={`Início: ${nome}`}
-            >
-              <span className="fa-stack fa-2xs">
-                <i className="fa-solid fa-flag fa-stack-2x"></i>
-                <strong className="fa-stack-1x stack-num">{i + 1}</strong>
-              </span>
-            </button>
-            <button
-              type="button"
-              className={"sketchup-btn btn-outline btn-flag-end" + (marcoAtivoKey === `fim_periodo_${i}` ? " active" : "")}
-              onClick={() => clicarMarco(`fim_periodo_${i}`)}
-              title={`Fim: ${nome}`}
-            >
-              <span className="fa-stack fa-2xs">
-                <i className="fa-solid fa-flag-checkered fa-stack-2x"></i>
-                <strong className="fa-stack-1x stack-num">{i + 1}</strong>
-              </span>
-            </button>
+          <div key={`periodo-row-${i}`} className="sketchup-periodo-block">
+            <div className="sketchup-periodo-label">{nome}</div>
+            <div className="sketchup-grid-row">
+              <button
+                type="button"
+                className={"sketchup-btn btn-outline btn-flag-start" + (marcoAtivoKey === `inicio_periodo_${i}` ? " active" : "")}
+                onClick={() => clicarMarco(`inicio_periodo_${i}`)}
+                title={`Início: ${nome}`}
+              >
+                <i className="fa-solid fa-flag"></i>
+              </button>
+              <button
+                type="button"
+                className={"sketchup-btn btn-outline btn-flag-end" + (marcoAtivoKey === `fim_periodo_${i}` ? " active" : "")}
+                onClick={() => clicarMarco(`fim_periodo_${i}`)}
+                title={`Fim: ${nome}`}
+              >
+                <i className="fa-solid fa-flag-checkered"></i>
+              </button>
+            </div>
           </div>
         ))}
       </div>

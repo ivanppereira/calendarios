@@ -80,7 +80,7 @@ export default function MonthGrid({ ano, mes, dias, tipoCalendario, atividades =
         <button
           key={key}
           type="button"
-          className={"day-cell" + (temMarcoPeriodo ? " has-flags" : "") + (temAnotacao ? " annotated" : "")}
+          className={"day-cell" + (temMarcoPeriodo ? " has-marco" : "") + (temAnotacao ? " annotated" : "")}
           style={{ background: bgCor, color: textCor }}
           onMouseDown={() => onDayMouseDown(key)}
           onMouseEnter={() => onDayMouseEnter(key)}
@@ -88,49 +88,6 @@ export default function MonthGrid({ ano, mes, dias, tipoCalendario, atividades =
           title={info.rotulo ? `${data.getDate()} — ${info.rotulo}` : t.label}
         >
           <span className="day-number">{data.getDate()}</span>
-          {temMarco && (
-            <div className="antigravity-flags-container">
-              {info.marcos.map((m) => {
-                if (m.startsWith("inicio_periodo_")) {
-                  const idx = parseInt(m.replace("inicio_periodo_", ""), 10) + 1;
-                  return (
-                    <span key={m} className="antigravity-flag-badge start-flag" title={`Início do ${idx}º Bimestre`}>
-                      <span className="fa-stack fa-xs">
-                        <i className="fa-solid fa-flag fa-stack-2x flag-icon"></i>
-                        <strong className="fa-stack-1x flag-number">{idx}</strong>
-                      </span>
-                    </span>
-                  );
-                }
-                if (m.startsWith("fim_periodo_")) {
-                  const idx = parseInt(m.replace("fim_periodo_", ""), 10) + 1;
-                  return (
-                    <span key={m} className="antigravity-flag-badge end-flag" title={`Fim do ${idx}º Bimestre`}>
-                      <span className="fa-stack fa-xs">
-                        <i className="fa-solid fa-flag-checkered fa-stack-2x flag-icon"></i>
-                        <strong className="fa-stack-1x flag-number">{idx}</strong>
-                      </span>
-                    </span>
-                  );
-                }
-                if (m === "inicio_ano") {
-                  return (
-                    <span key={m} className="antigravity-flag-badge start-flag" title="Início do Ano Letivo">
-                      <i className="fa-solid fa-play flag-icon-small"></i>
-                    </span>
-                  );
-                }
-                if (m === "fim_ano") {
-                  return (
-                    <span key={m} className="antigravity-flag-badge end-flag" title="Fim do Ano Letivo">
-                      <i className="fa-solid fa-stop flag-icon-small"></i>
-                    </span>
-                  );
-                }
-                return null;
-              })}
-            </div>
-          )}
           {temAnotacao && <span className="annotation-dot" />}
         </button>
       );
