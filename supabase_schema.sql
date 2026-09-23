@@ -23,10 +23,27 @@ create table if not exists calendarios (
 alter table calendarios add column if not exists token_editor uuid not null default gen_random_uuid();
 alter table calendarios add column if not exists token_comentador uuid not null default gen_random_uuid();
 alter table calendarios add column if not exists token_visualizador uuid not null default gen_random_uuid();
+alter table calendarios add column if not exists dono_id text;
+alter table calendarios add column if not exists dono_email text;
 
 create unique index if not exists idx_calendarios_token_editor on calendarios (token_editor);
 create unique index if not exists idx_calendarios_token_comentador on calendarios (token_comentador);
 create unique index if not exists idx_calendarios_token_visualizador on calendarios (token_visualizador);
+create index if not exists idx_calendarios_dono_email on calendarios (dono_email);
+
+-- ---------------------------------------------------------------------------
+-- Permissões por E-mail: compartilhamento direto com pessoas específicas
+-- ---------------------------------------------------------------------------
+create table if not exists calendario_permissoes (
+  id uuid primary key default gen_random_uuid(),
+  calendario_id uuid not null references calendarios(id) on delete cascade,
+  email text not null,
+  papel text not null check (papel in ('editor', 'comentador', 'visualizador')),
+  criado_em timestamptz not null default now(),
+  unique (calendario_id, email)
+);
+create index if not exists idx_permissoes_email on calendario_permissoes (email);
+alter table calendario_permissoes enable row level security;
 
 -- ---------------------------------------------------------------------------
 -- Histórico de versões: um "checkpoint" do estado do calendário em um momento

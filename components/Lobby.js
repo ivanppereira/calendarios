@@ -97,7 +97,7 @@ export default function Lobby() {
         <div className="lobby-header-topo">
           <div>
             <h1>Calendário Acadêmico</h1>
-            <p>Cada calendário salva sozinho a cada alteração e pode ser compartilhado — quem tiver o link edita junto com você, em tempo real.</p>
+            <p>Seus calendários são salvos automaticamente. Você pode compartilhar o seu calendário diretamente por e-mail com outras pessoas para editar ou visualizar juntos.</p>
           </div>
           <div className="usuario-chip">
             {avatarUrl && <img src={avatarUrl} alt="" className="usuario-avatar" />}

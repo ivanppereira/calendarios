@@ -14,6 +14,12 @@ export default function PeriodSummaryTable({ periodo, resumo }) {
 
   return (
     <div className="period-summary">
+      <div className="period-summary-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <h4 style={{ margin: 0, fontSize: "0.95rem", color: "var(--navy-dark)" }}>{periodo.nome}</h4>
+        <span className="badge-sabados-total" style={{ background: "#e2f0d9", color: "#38761D", padding: "3px 10px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 700 }}>
+          Total de sábados letivos no período: {resumo.totalSabados || 0}
+        </span>
+      </div>
       <table className="period-summary-table">
         <thead>
           <tr>
@@ -55,6 +61,14 @@ export default function PeriodSummaryTable({ periodo, resumo }) {
               <td className="total-col">{linha.total}</td>
             </tr>
           ))}
+          <tr className="subtotal-row2" style={{ fontWeight: 700, background: "#f5f7fa" }}>
+            <th className="row-label" style={{ color: "#38761D" }}>Total de Sábados</th>
+            {resumo.totalPorMes.flatMap((m, i) => [
+              <td key={`fc-${i}`}>-</td>,
+              <td key={`fs-${i}`} style={{ fontWeight: 700, color: "#38761D" }}>{m.sabado || 0}</td>,
+            ])}
+            <td className="total-col" style={{ color: "#38761D" }}>{resumo.totalSabados || 0}</td>
+          </tr>
         </tbody>
       </table>
     </div>

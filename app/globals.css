@@ -47,230 +47,233 @@ input, select {
   min-height: 100vh;
 }
 
-.app-header {
-  background: var(--navy);
-  color: #fff;
-  padding: 20px 28px;
+/* ---------------- Header Single Row (Requisito 2 & 5) ---------------- */
+.app-header-single-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 14px;
+  padding: 10px 24px;
+  background: var(--navy);
+  color: #fff;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 100;
   box-shadow: 0 2px 10px rgba(0,0,0,0.15);
 }
 
-.app-header-title h1 {
-  color: #fff;
-  font-size: 1.5rem;
-}
-
-.app-header-title p {
-  margin: 4px 0 0;
-  color: #c7d2e6;
-  font-size: 0.85rem;
-  max-width: 60ch;
-}
-
-.app-header-title {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 260px;
-}
-
-.lobby-back {
-  align-self: flex-start;
-  background: none;
-  border: none;
-  color: #c7d2e6;
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 0;
-  cursor: pointer;
-}
-.lobby-back:hover { color: #fff; text-decoration: underline; }
-
-.nome-calendario-input {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 6px;
-  color: #fff;
-  font-size: 1.15rem;
-  font-weight: 700;
-  padding: 5px 10px;
-  font-family: ui-serif, Georgia, serif;
-  max-width: 420px;
-}
-.nome-calendario-input:focus {
-  outline: none;
-  border-color: var(--gold);
-  background: rgba(255,255,255,0.14);
-}
-.nome-calendario-input::placeholder { color: #9fb0cc; }
-
-.status-salvamento {
+.header-single-left {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.78rem;
-  color: #cfe0ff;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  gap: 10px;
   flex: none;
 }
-.status-dot.status-sincronizado { background: #4ade80; }
-.status-dot.status-salvando { background: #facc15; animation: pulse-dot 1s infinite; }
-.status-dot.status-erro { background: #f87171; }
 
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
-}
-
-.colaboradores-badge {
-  margin-left: 8px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.12);
-  font-weight: 600;
-  font-size: 0.72rem;
-}
-
-.tela-central {
-  min-height: 100vh;
+.header-single-center {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  gap: 10px;
+  flex: 1;
   justify-content: center;
-  gap: 16px;
-  padding: 20px;
-  text-align: center;
 }
 
-/* ---------------- Lobby (tela inicial) ---------------- */
-
-.lobby-shell {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 40px 24px 80px;
-}
-
-.lobby-header {
-  margin-bottom: 32px;
-}
-.lobby-header h1 { font-size: 1.8rem; margin-bottom: 8px; }
-.lobby-header p {
-  color: var(--muted);
-  max-width: 65ch;
-  margin: 0 0 18px;
-}
-
-.lobby-body .calendarios-tabela {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-.lobby-body .calendarios-tabela th, .lobby-body .calendarios-tabela td {
-  padding: 12px 14px;
-}
-
-.lobby-link {
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--navy);
-  font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  text-align: left;
-}
-.lobby-link:hover { text-decoration: underline; }
-
-.app-header-controls {
+.header-single-right {
   display: flex;
-  align-items: flex-end;
-  gap: 14px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  flex: none;
 }
 
-.app-header-controls-save {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255,255,255,0.15);
-}
-.app-header-controls-save .btn-ghost {
-  background: rgba(255,255,255,0.08);
-  border-color: rgba(255,255,255,0.25);
-  color: #fff;
-}
-.app-header-controls-save .btn-ghost:hover { background: rgba(255,255,255,0.16); }
-
-.field-grow { flex: 1; min-width: 220px; }
-
-.calendario-atual-hint {
-  width: 100%;
-  color: #cfe0ff;
-  font-size: 0.8rem;
-  margin: 6px 0 0;
-}
-.calendario-atual-hint strong { color: #fff; }
-
-.aviso-msg {
-  width: 100%;
-  color: #c8f7d4;
-  font-size: 0.85rem;
-  margin: 4px 0 0;
-}
-
-.erro-msg {
-  width: 100%;
-  color: #ffd9c9;
-  font-size: 0.85rem;
-  margin: 4px 0 0;
-}
-
-.field {
+.field-inline-compact {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 0.8rem;
-  color: var(--muted);
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: #dbe4f2;
+  font-weight: 600;
 }
-
-.field-inline { min-width: 140px; }
-
-.field span { font-weight: 600; }
-
-.app-header .field span { color: #dbe4f2; }
-
-.field input, .field select {
-  padding: 7px 9px;
+.field-inline-compact input,
+.field-inline-compact select {
+  padding: 5px 8px;
   border-radius: 6px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-size: 0.82rem;
+}
+.field-inline-compact select option {
   background: #fff;
   color: var(--text);
 }
 
-.field-row {
-  display: flex;
-  gap: 12px;
+.btn-header-white {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s ease;
 }
-.field-row .field { flex: 1; }
+.btn-header-white:hover {
+  background: rgba(255, 255, 255, 0.28) !important;
+}
 
-.app-body {
+.btn-white-text {
+  color: #ffffff !important;
+}
+
+.status-salvamento-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #cfe0ff;
+  white-space: nowrap;
+}
+
+/* ---------------- Layout com Toolbar Lateral Sketchup (Requisito 3) ---------------- */
+.app-body-with-side-toolbar {
   display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 24px;
-  padding: 24px 28px 60px;
+  grid-template-columns: 110px 1fr 350px;
+  gap: 20px;
+  padding: 20px 24px 60px;
   align-items: start;
+}
+
+.sketchup-toolbar {
+  position: sticky;
+  top: 75px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  z-index: 15;
+  width: 110px;
+}
+
+.sketchup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.sketchup-btn-clear {
+  background: transparent;
+  border: none;
+  color: var(--pending);
+  font-size: 0.9rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+.sketchup-btn-clear:hover { background: var(--pending-bg); }
+
+.sketchup-section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--slate);
+  margin-top: 4px;
+}
+
+.sketchup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.sketchup-btn {
+  aspect-ratio: 1;
+  width: 100%;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: transform 0.1s ease, filter 0.1s ease, box-shadow 0.1s ease;
+  padding: 0;
+  box-sizing: border-box;
+}
+.sketchup-btn.btn-outline {
+  background: #ffffff !important;
+  color: var(--slate) !important;
+  border: 1px solid var(--line) !important;
+}
+.sketchup-btn:hover {
+  filter: brightness(0.92);
+  transform: scale(1.04);
+}
+.sketchup-btn.active {
+  box-shadow: 0 0 0 3px var(--gold) !important;
+  transform: scale(1.05);
+  z-index: 2;
+}
+
+.sketchup-sub-box {
+  background: #f6f7fa;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px;
+  font-size: 0.72rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sketchup-sub-box select {
+  font-size: 0.72rem;
+  padding: 3px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+}
+
+.sketchup-prompt-popover {
+  position: absolute;
+  left: 120px;
+  top: 140px;
+  width: 220px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sketchup-prompt-popover h5 {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--navy-dark);
+}
+
+.sketchup-active-hint {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--gold);
+  text-align: center;
+  margin-top: 4px;
+  padding: 4px;
+  background: #fbf6ec;
+  border-radius: 4px;
+  word-break: break-word;
 }
 
 /* ---------------- Toolbar ---------------- */
@@ -586,14 +589,16 @@ input, select {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 .status-banner {
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   font-weight: 700;
-  font-size: 0.85rem;
-  margin-bottom: 12px;
+  font-size: 0.9rem;
+  margin-bottom: 14px;
+  line-height: 1.45;
 }
 .status-banner.ok { background: var(--ok-bg); color: var(--ok); }
 .status-banner.pending { background: var(--pending-bg); color: var(--pending); }
@@ -604,35 +609,36 @@ input, select {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-height: 60vh;
-  overflow-y: auto;
+  gap: 8px;
+  max-height: none;
+  overflow: visible;
 }
 
 .checklist li {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: flex-start;
-  font-size: 0.82rem;
-  line-height: 1.35;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  word-break: break-word;
 }
 
 .checklist .mark {
   flex: none;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 .checklist li.ok .mark { background: var(--ok-bg); color: var(--ok); }
 .checklist li.pending .mark { background: var(--pending-bg); color: var(--pending); }
 .checklist li.ok span:last-child { color: var(--text); }
-.checklist li.pending span:last-child { color: var(--pending); }
+.checklist li.pending span:last-child { color: var(--pending); font-weight: 600; }
 .checklist li.info .mark { background: #e4ecfb; color: var(--navy); }
 .checklist li.info span:last-child { color: var(--navy-dark); }
 
@@ -641,15 +647,17 @@ input, select {
 .grupos-lista {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-height: 65vh;
-  overflow-y: auto;
+  gap: 8px;
+  max-height: none;
+  overflow: visible;
 }
 
 .grupo-validacao {
   border: 1px solid var(--line);
   border-radius: 8px;
   overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
 }
 
 .grupo-header {
@@ -657,35 +665,35 @@ input, select {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
+  padding: 10px 12px;
   background: #f6f7fa;
   border: none;
   text-align: left;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 700;
   color: var(--navy-dark);
 }
 .grupo-header:hover { background: #eef0f4; }
 
 .grupo-status {
   flex: none;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 .grupo-status.ok { background: var(--ok-bg); color: var(--ok); }
 .grupo-status.pending { background: var(--pending-bg); color: var(--pending); }
 
-.grupo-nome { flex: 1; }
-.grupo-caret { color: var(--muted); font-size: 0.75rem; }
+.grupo-nome { flex: 1; word-break: break-word; }
+.grupo-caret { color: var(--muted); font-size: 0.8rem; }
 
 .grupo-validacao .checklist {
-  padding: 8px 12px 10px 14px;
+  padding: 10px 12px 12px 14px;
   max-height: none;
   overflow: visible;
 }

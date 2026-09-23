@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CONFIG_TIPO, pyWeekday, keyToDate, enumerarIntervalo, categoriaInfo } from "../lib/constants";
-import { buildEffectiveDias } from "../lib/effective";
+import { CONFIG_TIPO, pyWeekday, keyToDate, enumerarIntervalo, categoriaInfo, metasIndividuais } from "../lib/constants";
+import { buildEffectiveDias, autoAjustarMarcos } from "../lib/effective";
 import { validarCalendario } from "../lib/validation";
 import { resumoPeriodo } from "../lib/periodSummary";
 import { useCalendarioColaborativo } from "../lib/useCalendarioColaborativo";
@@ -22,20 +22,20 @@ import { useAuthContext } from "../lib/AuthContext";
 const STATUS_LABEL = {
   sincronizado: "Salvo",
   salvando: "Salvando...",
-  erro: "Não foi possível salvar — tentando de novo",
+  erro: "Erro ao salvar",
 };
 
 const PAPEL_LABEL = {
-  editor: null, // não mostra selo — é o modo padrão
-  comentador: "Você está comentando (não pode editar o calendário)",
-  visualizador: "Somente visualização",
+  editor: null,
+  comentador: "Modo comentário",
+  visualizador: "Somente leitura",
 };
 
 export default function CalendarApp({ calendarioId, token }) {
   const router = useRouter();
-  const { nome: meuNome, avatarUrl, sair } = useAuthContext();
+  const { meuNome, avatarUrl, sair } = useAuthContext();
   const {
-    carregando, erroCarregar, statusSalvamento, colaboradoresOnline, papel, podeEditar, tokens,
+    carregando, erroCarregar, statusSalvamento, colaboradoresOnline, papel, podeEditar,
     nome, setNome, ano, setAno, tipo, setTipo, campus, setCampus,
     overrides, setOverrides, marcosPorDia, setMarcosPorDia, atividades, setAtividades,
     aplicarEstadoCompleto,
@@ -92,13 +92,16 @@ export default function CalendarApp({ calendarioId, token }) {
       const next = { ...prev };
       if (novo.limpar) delete next[key];
       else next[key] = { tipo: novo.tipo, contaComo: novo.contaComo, rotulo: novo.rotulo };
+      setMarcosPorDia((prevMarcos) =>
+        autoAjustarMarcos(prevMarcos, next, ano, tipo, metasIndividuais(tipo))
+      );
       return next;
     });
     setMarcosPorDia((prev) => {
       const next = { ...prev };
       if (novo.limpar || !novo.marcos || novo.marcos.length === 0) delete next[key];
       else next[key] = novo.marcos;
-      return next;
+      return autoAjustarMarcos(next, overrides, ano, tipo, metasIndividuais(tipo));
     });
     if (!novo.limpar && novo.addAtividade) {
       setAtividades((p) => [...p, { id: crypto.randomUUID(), ...novo.addAtividade }]);
@@ -107,15 +110,21 @@ export default function CalendarApp({ calendarioId, token }) {
       }
     }
     setSelecionado(null);
-  }, [podeEditar, marcarComoLetivo, setOverrides, setMarcosPorDia, setAtividades]);
+  }, [podeEditar, marcarComoLetivo, setOverrides, setMarcosPorDia, setAtividades, ano, tipo, overrides]);
 
   const aplicarFerramenta = useCallback((key) => {
     if (!podeEditar || !ferramentaAtiva) return;
     if (ferramentaAtiva.kind === "tipo") {
-      setOverrides((prev) => ({
-        ...prev,
-        [key]: { tipo: ferramentaAtiva.tipo, contaComo: ferramentaAtiva.contaComo ?? null, rotulo: null },
-      }));
+      setOverrides((prevOverrides) => {
+        const nextOverrides = {
+          ...prevOverrides,
+          [key]: { tipo: ferramentaAtiva.tipo, contaComo: ferramentaAtiva.contaComo ?? null, rotulo: null },
+        };
+        setMarcosPorDia((prevMarcos) =>
+          autoAjustarMarcos(prevMarcos, nextOverrides, ano, tipo, metasIndividuais(tipo))
+        );
+        return nextOverrides;
+      });
     } else if (ferramentaAtiva.kind === "marco") {
       setMarcosPorDia((prev) => {
         const next = {};
@@ -126,7 +135,7 @@ export default function CalendarApp({ calendarioId, token }) {
         const atual = new Set(next[key] || []);
         atual.add(ferramentaAtiva.marco);
         next[key] = Array.from(atual);
-        return next;
+        return autoAjustarMarcos(next, overrides, ano, tipo, metasIndividuais(tipo));
       });
     } else if (ferramentaAtiva.kind === "atividade") {
       setAtividades((prev) => {
@@ -143,7 +152,7 @@ export default function CalendarApp({ calendarioId, token }) {
         marcarComoLetivo(key, key, categoriaInfo(ferramentaAtiva.categoria).label);
       }
     }
-  }, [podeEditar, ferramentaAtiva, marcarComoLetivo, setOverrides, setMarcosPorDia, setAtividades]);
+  }, [podeEditar, ferramentaAtiva, marcarComoLetivo, setOverrides, setMarcosPorDia, setAtividades, ano, tipo, overrides]);
 
   const handleDayMouseDown = useCallback((key) => {
     if (!podeEditar) return;
@@ -218,9 +227,10 @@ export default function CalendarApp({ calendarioId, token }) {
 
   return (
     <div className="app-shell">
-      <header className="app-header">
-        <div className="app-header-title">
-          {calendarioId && <button className="lobby-back" onClick={() => router.push("/")}>← Meus calendários</button>}
+      {/* HEADER EM LINHA ÚNICA (Requisito 2 e 5) */}
+      <header className="app-header app-header-single-row">
+        <div className="header-single-left">
+          {calendarioId && <button className="lobby-back" onClick={() => router.push("/")}>← Voltar</button>}
           <input
             className="nome-calendario-input"
             value={nome}
@@ -228,65 +238,69 @@ export default function CalendarApp({ calendarioId, token }) {
             placeholder="Calendário sem título"
             disabled={!podeEditar}
           />
-          <div className="status-salvamento">
-            {podeEditar ? (
-              <>
-                <span className={"status-dot status-" + statusSalvamento} />
-                {STATUS_LABEL[statusSalvamento]}
-              </>
-            ) : (
-              <span className="papel-badge">{PAPEL_LABEL[papel]}</span>
-            )}
-            {colaboradoresOnline > 1 && (
-              <span className="colaboradores-badge">👥 {colaboradoresOnline} pessoas por aqui</span>
-            )}
-          </div>
         </div>
-        <div className="app-header-controls">
-          <label className="field field-inline">
-            <span>Ano</span>
+
+        <div className="header-single-center">
+          <label className="field-inline-compact">
+            <span>Ano:</span>
             <input type="number" value={ano} onChange={(e) => setAno(Number(e.target.value))} disabled={!podeEditar} />
           </label>
-          <label className="field field-inline">
-            <span>Campus</span>
-            <input type="text" value={campus} onChange={(e) => setCampus(e.target.value)} disabled={!podeEditar} />
+          <label className="field-inline-compact">
+            <span>Campus:</span>
+            <input type="text" value={campus} onChange={(e) => setCampus(e.target.value)} placeholder="Campus" disabled={!podeEditar} />
           </label>
-          <label className="field field-inline">
-            <span>Tipo de calendário</span>
+          <label className="field-inline-compact">
+            <span>Tipo:</span>
             <select value={tipo} onChange={(e) => setTipo(e.target.value)} disabled={!podeEditar}>
               {Object.entries(CONFIG_TIPO).map(([k, c]) => (
                 <option key={k} value={k}>{c.label}</option>
               ))}
             </select>
           </label>
-          {tokens && (
-            <button className="btn btn-ghost" onClick={() => setDialogoAberto("compartilhar")}>
-              🔗 Compartilhar
-            </button>
-          )}
-          {calendarioId && (
-            <button className="btn btn-ghost" onClick={() => setDialogoAberto("historico")}>
-              🕑 Histórico
-            </button>
-          )}
-          <button className="btn btn-ghost" onClick={duplicar} disabled={duplicando}>
-            {duplicando ? "Duplicando..." : "Duplicar"}
+          <div className="status-salvamento-badge">
+            {podeEditar ? (
+              <>
+                <span className={"status-dot status-" + statusSalvamento} />
+                <span>{STATUS_LABEL[statusSalvamento]}</span>
+              </>
+            ) : (
+              <span className="papel-badge">{PAPEL_LABEL[papel]}</span>
+            )}
+            {colaboradoresOnline > 1 && (
+              <span className="colaboradores-badge">👥 {colaboradoresOnline}</span>
+            )}
+          </div>
+        </div>
+
+        <div className="header-single-right">
+          <button className="btn btn-header-white" onClick={() => setDialogoAberto("compartilhar")} title="Compartilhar por e-mail">
+            <i className="fa-solid fa-share-nodes"></i> Compartilhar
           </button>
-          <button className="btn btn-primary" onClick={exportar} disabled={exportando}>
-            {exportando ? "Gerando..." : "Exportar para Excel"}
+          {calendarioId && (
+            <button className="btn btn-header-white" onClick={() => setDialogoAberto("historico")} title="Histórico de versões">
+              <i className="fa-solid fa-clock-rotate-left"></i> Histórico
+            </button>
+          )}
+          <button className="btn btn-header-white" onClick={duplicar} disabled={duplicando} title="Duplicar calendário">
+            <i className="fa-solid fa-copy"></i> {duplicando ? "Duplicando..." : "Duplicar"}
+          </button>
+          <button className="btn btn-primary btn-sm" onClick={exportar} disabled={exportando}>
+            <i className="fa-solid fa-file-excel"></i> {exportando ? "Gerando..." : "Exportar Excel"}
           </button>
           <div className="usuario-chip usuario-chip-header">
             {avatarUrl && <img src={avatarUrl} alt="" className="usuario-avatar" />}
-            <span>{meuNome}</span>
-            <button className="btn btn-ghost btn-sm" onClick={sair}>Sair</button>
+            <button className="btn btn-ghost btn-sm btn-white-text" onClick={sair}>Sair</button>
           </div>
         </div>
-        {erroExport && <p className="erro-msg">{erroExport}</p>}
       </header>
+      {erroExport && <p className="erro-msg" style={{ padding: "0 28px" }}>{erroExport}</p>}
 
-      {podeEditar && <Toolbar ferramentaAtiva={ferramentaAtiva} onSelecionar={setFerramentaAtiva} tipoCalendario={tipo} />}
+      {/* BODY COM TOOLBAR LATERAL FIXA ESTILO SKETCHUP (Requisito 3) */}
+      <div className="app-body app-body-with-side-toolbar">
+        {podeEditar && (
+          <Toolbar ferramentaAtiva={ferramentaAtiva} onSelecionar={setFerramentaAtiva} tipoCalendario={tipo} />
+        )}
 
-      <div className="app-body">
         <div className={"calendar-column" + (ferramentaAtiva ? " modo-pintura" : "") + (!podeEditar ? " somente-leitura" : "")}>
           {bandas.map((banda) => (
             <div className="month-band" key={banda}>
@@ -298,6 +312,8 @@ export default function CalendarApp({ calendarioId, token }) {
                     ano={ano}
                     mes={mes}
                     dias={dias}
+                    tipoCalendario={tipo}
+                    atividades={atividades}
                     anotacoesPorDia={anotacoesPorDia}
                     onDayMouseDown={handleDayMouseDown}
                     onDayMouseEnter={handleDayMouseEnter}
@@ -347,7 +363,7 @@ export default function CalendarApp({ calendarioId, token }) {
       )}
 
       {dialogoAberto === "compartilhar" && (
-        <ShareDialog tokens={tokens} onClose={() => setDialogoAberto(null)} />
+        <ShareDialog calendarioId={calendarioId} onClose={() => setDialogoAberto(null)} />
       )}
       {dialogoAberto === "historico" && calendarioId && (
         <HistoricoModal

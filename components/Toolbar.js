@@ -3,8 +3,20 @@
 import { useState } from "react";
 import { TIPOS, DIAS_SEMANA_PT, CONFIG_TIPO, CATEGORIAS_ATIVIDADE, categoriaInfo } from "../lib/constants";
 
+// Ícones FontAwesome para cada classificação de dia
+const ICONS_TIPO = {
+  letivo: "fa-solid fa-calendar-check",
+  recuperacao: "fa-solid fa-rotate-left",
+  substituicao: "fa-solid fa-arrow-right-arrow-left",
+  feriado: "fa-solid fa-umbrella-beach",
+  recesso: "fa-solid fa-mug-hot",
+  ferias: "fa-solid fa-sun",
+  sabado_letivo: "fa-solid fa-calendar-plus",
+  exame: "fa-solid fa-graduation-cap",
+};
+
 export default function Toolbar({ ferramentaAtiva, onSelecionar, tipoCalendario }) {
-  const cfg = CONFIG_TIPO[tipoCalendario];
+  const cfg = CONFIG_TIPO[tipoCalendario] || CONFIG_TIPO.superior;
   const [categoriaPrompt, setCategoriaPrompt] = useState("evento");
   const [textoPrompt, setTextoPrompt] = useState("");
   const [contaComoLetivoPrompt, setContaComoLetivoPrompt] = useState(false);
@@ -59,75 +71,118 @@ export default function Toolbar({ ferramentaAtiva, onSelecionar, tipoCalendario 
     setPromptAberto(false);
   }
 
+  // Filtrar o tipo "fora" (removido a pedido da especificação 8)
+  const tiposExibicao = Object.entries(TIPOS).filter(([k]) => k !== "fora");
+
   return (
-    <div className="toolbar">
-      <div className="toolbar-row">
-        <span className="toolbar-label">Classificar:</span>
-        <div className="toolbar-group">
-          {Object.entries(TIPOS).map(([k, t]) => (
+    <aside className="sketchup-toolbar">
+      <div className="sketchup-header">
+        <span>Ferramentas</span>
+        {ferramentaAtiva && (
+          <button
+            type="button"
+            className="sketchup-btn-clear"
+            onClick={() => onSelecionar(null)}
+            title="Parar de marcar / Limpar ferramenta"
+          >
+            <i className="fa-solid fa-xmark"></i>
+          </button>
+        )}
+      </div>
+
+      <div className="sketchup-section-label">Classificar</div>
+      <div className="sketchup-grid">
+        {tiposExibicao.map(([k, t]) => {
+          const isActive = tipoAtivoKey === k;
+          return (
             <button
               key={k}
               type="button"
-              className={"toolbar-chip" + (tipoAtivoKey === k ? " active" : "")}
-              style={{ background: t.cor, color: t.texto, borderColor: tipoAtivoKey === k ? "var(--gold)" : "transparent" }}
+              className={"sketchup-btn" + (isActive ? " active" : "")}
+              style={{
+                background: t.cor,
+                color: t.texto,
+                border: isActive ? "2px solid var(--gold)" : "1px solid rgba(0,0,0,0.15)",
+              }}
               onClick={() => clicarTipo(k)}
-              title={`Clique e arraste sobre os dias para marcar como "${t.label}"`}
+              title={`${t.label} — Clique e arraste para aplicar nos dias`}
             >
-              {t.label}
+              <i className={ICONS_TIPO[k] || "fa-solid fa-pen"}></i>
             </button>
-          ))}
-        </div>
-        {(tipoAtivoKey === "sabado_letivo" || tipoAtivoKey === "substituicao") && (
-          <label className="toolbar-inline-select">
-            <span>Refere-se a:</span>
-            <select value={ferramentaAtiva.contaComo ?? 0} onChange={(e) => mudarContaComo(e.target.value)}>
-              {DIAS_SEMANA_PT.slice(0, 5).map((nome, i) => (
-                <option key={i} value={i}>{nome}-feira</option>
-              ))}
-            </select>
-          </label>
-        )}
+          );
+        })}
       </div>
 
-      <div className="toolbar-row">
-        <span className="toolbar-label">Marcos:</span>
-        <div className="toolbar-group">
-          <button type="button" className={"toolbar-chip chip-outline" + (marcoAtivoKey === "inicio_ano" ? " active" : "")}
-            onClick={() => clicarMarco("inicio_ano")}>Início do ano letivo</button>
-          <button type="button" className={"toolbar-chip chip-outline" + (marcoAtivoKey === "fim_ano" ? " active" : "")}
-            onClick={() => clicarMarco("fim_ano")}>Fim do ano letivo</button>
-          {cfg.nomesPeriodo.map((nome, i) => (
-            <button key={`ini-${i}`} type="button"
-              className={"toolbar-chip chip-outline" + (marcoAtivoKey === `inicio_periodo_${i}` ? " active" : "")}
-              onClick={() => clicarMarco(`inicio_periodo_${i}`)}>Início {nome}</button>
-          ))}
-          {cfg.nomesPeriodo.map((nome, i) => (
-            <button key={`fim-${i}`} type="button"
-              className={"toolbar-chip chip-outline" + (marcoAtivoKey === `fim_periodo_${i}` ? " active" : "")}
-              onClick={() => clicarMarco(`fim_periodo_${i}`)}>Fim {nome}</button>
-          ))}
+      {(tipoAtivoKey === "sabado_letivo" || tipoAtivoKey === "substituicao") && (
+        <div className="sketchup-sub-box">
+          <label className="sketchup-label">Refere-se a:</label>
+          <select value={ferramentaAtiva.contaComo ?? 0} onChange={(e) => mudarContaComo(e.target.value)}>
+            {DIAS_SEMANA_PT.slice(0, 5).map((nome, i) => (
+              <option key={i} value={i}>{nome}-feira</option>
+            ))}
+          </select>
         </div>
+      )}
+
+      <div className="sketchup-section-label">Marcos</div>
+      <div className="sketchup-grid">
+        <button
+          type="button"
+          className={"sketchup-btn btn-outline" + (marcoAtivoKey === "inicio_ano" ? " active" : "")}
+          onClick={() => clicarMarco("inicio_ano")}
+          title="Início do ano letivo"
+        >
+          <i className="fa-solid fa-play"></i>
+        </button>
+        <button
+          type="button"
+          className={"sketchup-btn btn-outline" + (marcoAtivoKey === "fim_ano" ? " active" : "")}
+          onClick={() => clicarMarco("fim_ano")}
+          title="Fim do ano letivo"
+        >
+          <i className="fa-solid fa-stop"></i>
+        </button>
+
+        {cfg.nomesPeriodo.map((nome, i) => (
+          <button
+            key={`ini-${i}`}
+            type="button"
+            className={"sketchup-btn btn-outline" + (marcoAtivoKey === `inicio_periodo_${i}` ? " active" : "")}
+            onClick={() => clicarMarco(`inicio_periodo_${i}`)}
+            title={`Início: ${nome}`}
+          >
+            <i className="fa-solid fa-forward-step"></i>
+          </button>
+        ))}
+
+        {cfg.nomesPeriodo.map((nome, i) => (
+          <button
+            key={`fim-${i}`}
+            type="button"
+            className={"sketchup-btn btn-outline" + (marcoAtivoKey === `fim_periodo_${i}` ? " active" : "")}
+            onClick={() => clicarMarco(`fim_periodo_${i}`)}
+            title={`Fim: ${nome}`}
+          >
+            <i className="fa-solid fa-flag-checkered"></i>
+          </button>
+        ))}
       </div>
 
-      <div className="toolbar-row">
-        <span className="toolbar-label">Atividades:</span>
-        <div className="toolbar-group">
-          <button type="button" className={"toolbar-chip chip-outline" + (atividadeAtiva ? " active" : "")}
-            onClick={abrirPromptAtividade}>
-            {atividadeAtiva
-              ? `${categoriaInfo(atividadeAtiva.categoria).label}${atividadeAtiva.descricao ? `: "${atividadeAtiva.descricao}"` : ""}`
-              : "Marcar prazo / evento / conselho..."}
-          </button>
-        </div>
-        {ferramentaAtiva && (
-          <button type="button" className="toolbar-clear" onClick={() => onSelecionar(null)}>
-            ✕ Parar de marcar
-          </button>
-        )}
+      <div className="sketchup-section-label">Atividade</div>
+      <div className="sketchup-grid">
+        <button
+          type="button"
+          className={"sketchup-btn btn-outline" + (atividadeAtiva ? " active" : "")}
+          onClick={abrirPromptAtividade}
+          title={atividadeAtiva ? `Atividade: ${atividadeAtiva.descricao || atividadeAtiva.categoria}` : "Marcar evento / conselho / reunião..."}
+        >
+          <i className="fa-solid fa-clipboard-list"></i>
+        </button>
       </div>
 
       {promptAberto && (
-        <div className="toolbar-prompt">
+        <div className="sketchup-prompt-popover">
+          <h5>Marcar Atividade</h5>
           <select value={categoriaPrompt} onChange={(e) => setCategoriaPrompt(e.target.value)}>
             {CATEGORIAS_ATIVIDADE.map((c) => (
               <option key={c.key} value={c.key}>{c.label}</option>
@@ -147,16 +202,18 @@ export default function Toolbar({ ferramentaAtiva, onSelecionar, tipoCalendario 
               <span>Conta como letivo</span>
             </label>
           )}
-          <button className="btn btn-primary btn-sm" onClick={confirmarAtividade}>Usar e marcar dias</button>
+          <button className="btn btn-primary btn-sm" onClick={confirmarAtividade}>Marcar</button>
           <button className="btn btn-ghost btn-sm" onClick={() => setPromptAberto(false)}>Cancelar</button>
         </div>
       )}
 
-      {ferramentaAtiva && !promptAberto && (
-        <p className="toolbar-hint">
-          Ferramenta ativa — clique num dia para marcá-lo, ou clique e arraste sobre vários dias seguidos.
-        </p>
+      {ferramentaAtiva && (
+        <div className="sketchup-active-hint">
+          {ferramentaAtiva.kind === "tipo" && (TIPOS[ferramentaAtiva.tipo]?.label || ferramentaAtiva.tipo)}
+          {ferramentaAtiva.kind === "marco" && "Marco de Período"}
+          {ferramentaAtiva.kind === "atividade" && "Atividade / Evento"}
+        </div>
       )}
-    </div>
+    </aside>
   );
 }
