@@ -96,21 +96,21 @@ export default function CalendarApp({ calendarioId, token }) {
 
   const salvarDia = useCallback((key, novo) => {
     if (!podeEditar) return;
-    setOverrides((prev) => {
-      const next = { ...prev };
-      if (novo.limpar) delete next[key];
-      else next[key] = { tipo: novo.tipo, contaComo: novo.contaComo, rotulo: novo.rotulo };
-      setMarcosPorDia((prevMarcos) =>
-        autoAjustarMarcos(prevMarcos, next, ano, tipo, metasIndividuais(tipo))
-      );
-      return next;
+    setOverrides((prevOverrides) => {
+      const nextOverrides = { ...prevOverrides };
+      if (novo.limpar) delete nextOverrides[key];
+      else nextOverrides[key] = { tipo: novo.tipo, contaComo: novo.contaComo, rotulo: novo.rotulo };
+
+      setMarcosPorDia((prevMarcos) => {
+        const nextMarcos = { ...prevMarcos };
+        if (novo.limpar || !novo.marcos || novo.marcos.length === 0) delete nextMarcos[key];
+        else nextMarcos[key] = novo.marcos;
+        return autoAjustarMarcos(nextMarcos, nextOverrides, ano, tipo, metasIndividuais(tipo));
+      });
+
+      return nextOverrides;
     });
-    setMarcosPorDia((prev) => {
-      const next = { ...prev };
-      if (novo.limpar || !novo.marcos || novo.marcos.length === 0) delete next[key];
-      else next[key] = novo.marcos;
-      return autoAjustarMarcos(next, overrides, ano, tipo, metasIndividuais(tipo));
-    });
+
     if (!novo.limpar && novo.addAtividade) {
       setAtividades((p) => [...p, { id: crypto.randomUUID(), ...novo.addAtividade }]);
       if (novo.addAtividade.contaComoLetivo) {
@@ -118,7 +118,7 @@ export default function CalendarApp({ calendarioId, token }) {
       }
     }
     setSelecionado(null);
-  }, [podeEditar, marcarComoLetivo, setOverrides, setMarcosPorDia, setAtividades, ano, tipo, overrides]);
+  }, [podeEditar, marcarComoLetivo, setOverrides, setMarcosPorDia, setAtividades, ano, tipo]);
 
   const aplicarFerramenta = useCallback((key) => {
     if (!podeEditar || !ferramentaAtiva) return;
