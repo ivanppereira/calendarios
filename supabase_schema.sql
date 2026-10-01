@@ -49,6 +49,8 @@ create table if not exists usuarios (
 );
 create index if not exists idx_usuarios_email on usuarios (email);
 alter table usuarios enable row level security;
+drop policy if exists "politica_acesso_usuarios" on usuarios;
+create policy "politica_acesso_usuarios" on usuarios for all using (true) with check (true);
 
 -- ---------------------------------------------------------------------------
 -- Permissões por E-mail: compartilhamento direto com pessoas específicas
@@ -63,6 +65,8 @@ create table if not exists calendario_permissoes (
 );
 create index if not exists idx_permissoes_email on calendario_permissoes (email);
 alter table calendario_permissoes enable row level security;
+drop policy if exists "politica_acesso_permissoes" on calendario_permissoes;
+create policy "politica_acesso_permissoes" on calendario_permissoes for all using (true) with check (true);
 
 -- ---------------------------------------------------------------------------
 -- Histórico de versões: um "checkpoint" do estado do calendário em um momento
@@ -94,8 +98,8 @@ create table if not exists calendario_versoes (
 );
 create index if not exists idx_versoes_calendario on calendario_versoes (calendario_id, criado_em desc);
 alter table calendario_versoes enable row level security;
--- sem policies públicas: o histórico só é lido/gravado pelas rotas de API
--- (service role), nunca diretamente pelo navegador.
+drop policy if exists "politica_acesso_versoes" on calendario_versoes;
+create policy "politica_acesso_versoes" on calendario_versoes for all using (true) with check (true);
 
 -- ---------------------------------------------------------------------------
 -- Comentários: usados pelo papel "Comentador" (e também disponível ao
@@ -112,7 +116,8 @@ create table if not exists calendario_comentarios (
 );
 create index if not exists idx_comentarios_calendario on calendario_comentarios (calendario_id, criado_em desc);
 alter table calendario_comentarios enable row level security;
--- idem: sem policies públicas, acesso só pelas rotas de API.
+drop policy if exists "politica_acesso_comentarios" on calendario_comentarios;
+create policy "politica_acesso_comentarios" on calendario_comentarios for all using (true) with check (true);
 
 -- mantém updated_at sempre atualizado automaticamente
 create or replace function set_updated_at()
@@ -128,17 +133,9 @@ create trigger trg_calendarios_updated_at
 before update on calendarios
 for each row execute function set_updated_at();
 
--- Row Level Security: habilitada. Escritas continuam só pelas rotas de API do
--- Next.js (app/api/calendarios/... e app/api/compartilhado/...), que usam a
--- service role key (só existe no servidor) e por isso contornam a RLS. A
--- policy de leitura abaixo é só para permitir que o NAVEGADOR (chave anônima)
--- receba as atualizações em tempo real (Realtime) e a contagem de
--- colaboradores online — sem ela, a sincronização ao vivo não funciona.
 alter table calendarios enable row level security;
-
-drop policy if exists "leitura publica para realtime" on calendarios;
-create policy "leitura publica para realtime" on calendarios
-  for select using (true);
+drop policy if exists "politica_acesso_calendarios" on calendarios;
+create policy "politica_acesso_calendarios" on calendarios for all using (true) with check (true);
 
 -- necessário para o Realtime enviar o registro ANTIGO junto com o NOVO em cada
 -- atualização — é isso que permite mesclar mudanças de dois editores diferentes
