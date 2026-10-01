@@ -156,18 +156,22 @@ export default function CalendarApp({ calendarioId, token }) {
       });
       setAtividades((prev) => prev.filter((a) => !(key >= a.dataInicio && key <= (a.dataFim || a.dataInicio))));
     } else if (ferramentaAtiva.kind === "tipo") {
-      let contaComoFinal = ferramentaAtiva.contaComo ?? null;
-      if ((ferramentaAtiva.tipo === "sabado_letivo" || ferramentaAtiva.tipo === "substituicao") && contaComoFinal === null) {
-        contaComoFinal = 0; // Padrão: Segunda-feira
+      if (ferramentaAtiva.tipo === "sabado_letivo") {
+        setDiaSabadoPendente(key);
+        return;
       }
-      let rotuloFinal = ferramentaAtiva.rotulo || null;
-      if (ferramentaAtiva.tipo === "conselho" && !rotuloFinal) {
-        rotuloFinal = "Conselho de Classe";
+      if (ferramentaAtiva.tipo === "substituicao") {
+        setDiaSubstituicaoPendente(key);
+        return;
+      }
+      if (ferramentaAtiva.tipo === "conselho") {
+        setDiaConselhoPendente(key);
+        return;
       }
       atualizarDiaOverride(key, {
         tipo: ferramentaAtiva.tipo,
-        contaComo: contaComoFinal,
-        rotulo: rotuloFinal,
+        contaComo: ferramentaAtiva.contaComo ?? null,
+        rotulo: ferramentaAtiva.rotulo || null,
       });
     } else if (ferramentaAtiva.kind === "marco") {
       setMarcosPorDia((prev) => {
@@ -205,13 +209,26 @@ export default function CalendarApp({ calendarioId, token }) {
       return;
     }
     aplicarFerramenta(key);
-    if (ferramentaAtiva.kind !== "marco") {
+    if (
+      ferramentaAtiva.kind !== "marco" &&
+      ferramentaAtiva.tipo !== "sabado_letivo" &&
+      ferramentaAtiva.tipo !== "substituicao" &&
+      ferramentaAtiva.tipo !== "conselho"
+    ) {
       pintandoRef.current = true;
     }
   }, [podeEditar, ferramentaAtiva, aplicarFerramenta]);
 
   const handleDayMouseEnter = useCallback((key) => {
-    if (podeEditar && ferramentaAtiva && ferramentaAtiva.kind !== "marco" && pintandoRef.current) {
+    if (
+      podeEditar &&
+      ferramentaAtiva &&
+      ferramentaAtiva.kind !== "marco" &&
+      ferramentaAtiva.tipo !== "sabado_letivo" &&
+      ferramentaAtiva.tipo !== "substituicao" &&
+      ferramentaAtiva.tipo !== "conselho" &&
+      pintandoRef.current
+    ) {
       aplicarFerramenta(key);
     }
   }, [podeEditar, ferramentaAtiva, aplicarFerramenta]);
@@ -482,6 +499,7 @@ export default function CalendarApp({ calendarioId, token }) {
                 "Conselho Pedagógico (2º Bimestre)",
                 "Conselho Pedagógico (3º Bimestre)",
                 "Conselho Final",
+                "Conselho de Classe",
               ].map((label, idx) => (
                 <button key={idx} className="btn btn-primary btn-full" style={{ background: "#B45F06", borderColor: "#8A4703", color: "#FFFFFF" }} onClick={() => confirmarConselho(label)}>
                   {label}
