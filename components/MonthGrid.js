@@ -94,7 +94,7 @@ export default function MonthGrid({ ano, mes, dias, tipoCalendario, atividades =
     });
   });
 
-  const notas = agruparNotas(eventosDia);
+  const notas = agruparNotas(eventosDia, ano, mes);
 
   return (
     <div className="month-card">

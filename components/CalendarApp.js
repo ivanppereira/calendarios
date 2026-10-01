@@ -114,13 +114,16 @@ export default function CalendarApp({ calendarioId, token }) {
     if (!podeEditar) return;
     setOverrides((prevOverrides) => {
       const nextOverrides = { ...prevOverrides };
-      if (novo.limpar) delete nextOverrides[key];
-      else nextOverrides[key] = { tipo: novo.tipo, contaComo: novo.contaComo, rotulo: novo.rotulo };
+      if (novo.limpar || novo.removerOverride) delete nextOverrides[key];
+      else if (novo.tipo) nextOverrides[key] = { tipo: novo.tipo, contaComo: novo.contaComo, rotulo: novo.rotulo };
 
       setMarcosPorDia((prevMarcos) => {
         const nextMarcos = { ...prevMarcos };
-        if (novo.limpar || !novo.marcos || novo.marcos.length === 0) delete nextMarcos[key];
-        else nextMarcos[key] = novo.marcos;
+        if (novo.limpar) delete nextMarcos[key];
+        else if (novo.marcos !== undefined) {
+          if (!novo.marcos || novo.marcos.length === 0) delete nextMarcos[key];
+          else nextMarcos[key] = novo.marcos;
+        }
         return autoAjustarMarcos(nextMarcos, nextOverrides, ano, tipo, metasIndividuais(tipo));
       });
 
@@ -415,9 +418,11 @@ export default function CalendarApp({ calendarioId, token }) {
         <DayPopover
           dateKey={selecionado}
           info={dias[selecionado]}
+          atividadesDia={atividades.filter((a) => selecionado >= a.dataInicio && selecionado <= (a.dataFim || a.dataInicio))}
           tipoCalendario={tipo}
           onClose={() => setSelecionado(null)}
           onSave={(novo) => salvarDia(selecionado, novo)}
+          onRemoverAtividade={(id) => setAtividades((prev) => prev.filter((a) => a.id !== id))}
         />
       )}
 

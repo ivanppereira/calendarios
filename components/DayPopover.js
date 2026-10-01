@@ -25,7 +25,7 @@ function traduzirMarco(m, cfg) {
   return m;
 }
 
-export default function DayPopover({ dateKey: key, info, tipoCalendario, onClose, onSave }) {
+export default function DayPopover({ dateKey: key, info, atividadesDia = [], tipoCalendario, onClose, onSave, onRemoverAtividade }) {
   const cfg = CONFIG_TIPO[tipoCalendario];
   const wdAtual = pyWeekday(keyToDate(key));
   const ehSabado = wdAtual === 5;
@@ -117,11 +117,40 @@ export default function DayPopover({ dateKey: key, info, tipoCalendario, onClose
         </div>
 
         <div className="modal-status">
-          <span>Atual: <strong>{statusAtual}</strong>{info?.rotulo ? ` — "${info.rotulo}"` : ""}</span>
-          {info?.marcos && info.marcos.length > 0 && (
-            <span className="modal-status-marcos">
-              Marcos: {info.marcos.map((m) => traduzirMarco(m, cfg)).join(", ")}
-            </span>
+          <div>
+            <span>Atual: <strong>{statusAtual}</strong>{info?.rotulo ? ` — "${info.rotulo}"` : ""}</span>
+            {info?.marcos && info.marcos.length > 0 && (
+              <span className="modal-status-marcos" style={{ display: "block", marginTop: 2 }}>
+                Marcos: {info.marcos.map((m) => traduzirMarco(m, cfg)).join(", ")}
+              </span>
+            )}
+          </div>
+
+          {atividadesDia && atividadesDia.length > 0 && (
+            <div className="modal-atividades-list" style={{ marginTop: 10, paddingTop: 8, borderTop: "1px dashed #cbd5e0" }}>
+              <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#2d3748" }}>Eventos / Atividades cadastrados neste dia:</span>
+              <ul style={{ margin: "6px 0 0 0", padding: 0, listStyle: "none" }}>
+                {atividadesDia.map((atv) => (
+                  <li key={atv.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, background: "#f7fafc", padding: "4px 8px", borderRadius: 4, fontSize: "0.82rem" }}>
+                    <span>
+                      <strong>{categoriaInfo(atv.categoria).label}</strong>
+                      {atv.desc ? ` — ${atv.desc}` : ""}
+                    </span>
+                    {onRemoverAtividade && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        style={{ color: "#e53e3e", padding: "2px 6px", fontSize: "0.75rem", marginLeft: 8 }}
+                        onClick={() => onRemoverAtividade(atv.id)}
+                        title="Remover apenas esta atividade"
+                      >
+                        <i className="fa-solid fa-trash"></i> Excluir
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
 
@@ -139,6 +168,17 @@ export default function DayPopover({ dateKey: key, info, tipoCalendario, onClose
                     {t.label}
                   </button>
                 ))}
+                {info?.temOverride && (
+                  <button
+                    type="button"
+                    className="chip chip-outline"
+                    style={{ borderColor: "#feb2b2", color: "#c53030", background: "#fff5f5" }}
+                    onClick={() => onSave({ removerOverride: true })}
+                    title="Remover apenas a classificação deste dia (retornar ao dia letivo padrão)"
+                  >
+                    <i className="fa-solid fa-eraser"></i> Limpar apenas classificação
+                  </button>
+                )}
               </div>
             </div>
 
