@@ -25,11 +25,30 @@ alter table calendarios add column if not exists token_comentador uuid not null 
 alter table calendarios add column if not exists token_visualizador uuid not null default gen_random_uuid();
 alter table calendarios add column if not exists dono_id text;
 alter table calendarios add column if not exists dono_email text;
+alter table calendarios add column if not exists publicado boolean not null default false;
 
 create unique index if not exists idx_calendarios_token_editor on calendarios (token_editor);
 create unique index if not exists idx_calendarios_token_comentador on calendarios (token_comentador);
 create unique index if not exists idx_calendarios_token_visualizador on calendarios (token_visualizador);
 create index if not exists idx_calendarios_dono_email on calendarios (dono_email);
+
+-- ---------------------------------------------------------------------------
+-- Tabela de Usuários e Permissões do Sistema (Superusuário, Campus, Criação, Publicação)
+-- ---------------------------------------------------------------------------
+create table if not exists usuarios (
+  id text primary key,
+  email text unique not null,
+  nome text,
+  avatar_url text,
+  campus text default 'Pouso Alegre',
+  pode_criar boolean not null default true,
+  pode_publicar boolean not null default true,
+  e_superusuario boolean not null default false,
+  criado_em timestamptz not null default now(),
+  atualizado_em timestamptz not null default now()
+);
+create index if not exists idx_usuarios_email on usuarios (email);
+alter table usuarios enable row level security;
 
 -- ---------------------------------------------------------------------------
 -- Permissões por E-mail: compartilhamento direto com pessoas específicas

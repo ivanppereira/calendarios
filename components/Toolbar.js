@@ -138,7 +138,6 @@ export default function Toolbar({ ferramentaAtiva, onSelecionar, tipoCalendario 
             <option value="Conselho Pedagógico (1º Bimestre)">Conselho Pedagógico (1º Bimestre)</option>
             <option value="Conselho Pedagógico (2º Bimestre)">Conselho Pedagógico (2º Bimestre)</option>
             <option value="Conselho Pedagógico (3º Bimestre)">Conselho Pedagógico (3º Bimestre)</option>
-            <option value="Conselho Pedagógico (4º Bimestre)">Conselho Pedagógico (4º Bimestre)</option>
             <option value="Conselho Final">Conselho Final</option>
           </select>
         </div>
@@ -193,7 +192,7 @@ export default function Toolbar({ ferramentaAtiva, onSelecionar, tipoCalendario 
         ))}
       </div>
 
-      <div className="sketchup-section-label">Atividade</div>
+      <div className="sketchup-section-label">Atividade & Limpeza</div>
       <div className="sketchup-grid">
         <button
           type="button"
@@ -202,6 +201,15 @@ export default function Toolbar({ ferramentaAtiva, onSelecionar, tipoCalendario 
           title={atividadeAtiva ? `Atividade: ${atividadeAtiva.descricao || atividadeAtiva.categoria}` : "Marcar evento / conselho / reunião..."}
         >
           <i className="fa-solid fa-clipboard-list"></i>
+        </button>
+        <button
+          type="button"
+          className={"sketchup-btn btn-outline" + (ferramentaAtiva?.kind === "restaurar" ? " active" : "")}
+          style={{ background: "#fff0f0", color: "#c53030", borderColor: "#feb2b2" }}
+          onClick={() => onSelecionar(ferramentaAtiva?.kind === "restaurar" ? null : { kind: "restaurar" })}
+          title="Restaurar dia — Limpar todas as configurações do dia"
+        >
+          <i className="fa-solid fa-eraser"></i>
         </button>
       </div>
 
@@ -237,6 +245,7 @@ export default function Toolbar({ ferramentaAtiva, onSelecionar, tipoCalendario 
           {ferramentaAtiva.kind === "tipo" && (TIPOS[ferramentaAtiva.tipo]?.label || ferramentaAtiva.tipo)}
           {ferramentaAtiva.kind === "marco" && "Marco de Período"}
           {ferramentaAtiva.kind === "atividade" && "Atividade / Evento"}
+          {ferramentaAtiva.kind === "restaurar" && "Restaurar / Limpar Dia"}
         </div>
       )}
     </aside>

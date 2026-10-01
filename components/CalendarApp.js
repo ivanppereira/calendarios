@@ -127,7 +127,9 @@ export default function CalendarApp({ calendarioId, token }) {
       return nextOverrides;
     });
 
-    if (!novo.limpar && novo.addAtividade) {
+    if (novo.limpar) {
+      setAtividades((prev) => prev.filter((a) => !(key >= a.dataInicio && key <= (a.dataFim || a.dataInicio))));
+    } else if (novo.addAtividade) {
       setAtividades((p) => [...p, { id: crypto.randomUUID(), ...novo.addAtividade }]);
       if (novo.addAtividade.contaComoLetivo) {
         marcarComoLetivo(novo.addAtividade.dataInicio, novo.addAtividade.dataFim, categoriaInfo(novo.addAtividade.categoria).label);
@@ -138,7 +140,19 @@ export default function CalendarApp({ calendarioId, token }) {
 
   const aplicarFerramenta = useCallback((key) => {
     if (!podeEditar || !ferramentaAtiva) return;
-    if (ferramentaAtiva.kind === "tipo") {
+    if (ferramentaAtiva.kind === "restaurar") {
+      setOverrides((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+      setMarcosPorDia((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return autoAjustarMarcos(next, overrides, ano, tipo, metasIndividuais(tipo));
+      });
+      setAtividades((prev) => prev.filter((a) => !(key >= a.dataInicio && key <= (a.dataFim || a.dataInicio))));
+    } else if (ferramentaAtiva.kind === "tipo") {
       let contaComoFinal = ferramentaAtiva.contaComo ?? null;
       if ((ferramentaAtiva.tipo === "sabado_letivo" || ferramentaAtiva.tipo === "substituicao") && contaComoFinal === null) {
         contaComoFinal = 0; // Padrão: Segunda-feira
@@ -179,7 +193,7 @@ export default function CalendarApp({ calendarioId, token }) {
         marcarComoLetivo(key, key, categoriaInfo(ferramentaAtiva.categoria).label);
       }
     }
-  }, [podeEditar, ferramentaAtiva, marcarComoLetivo, setAtividades, ano, tipo, overrides, atualizarDiaOverride]);
+  }, [podeEditar, ferramentaAtiva, marcarComoLetivo, setOverrides, setMarcosPorDia, setAtividades, ano, tipo, overrides, atualizarDiaOverride]);
 
   const handleDayMouseDown = useCallback((key) => {
     if (!podeEditar) return;
@@ -462,7 +476,6 @@ export default function CalendarApp({ calendarioId, token }) {
                 "Conselho Pedagógico (1º Bimestre)",
                 "Conselho Pedagógico (2º Bimestre)",
                 "Conselho Pedagógico (3º Bimestre)",
-                "Conselho Pedagógico (4º Bimestre)",
                 "Conselho Final",
               ].map((label, idx) => (
                 <button key={idx} className="btn btn-primary btn-full" style={{ background: "#B45F06", borderColor: "#8A4703", color: "#FFFFFF" }} onClick={() => confirmarConselho(label)}>
