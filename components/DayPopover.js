@@ -189,7 +189,6 @@ export default function DayPopover({ dateKey: key, info, tipoCalendario, onClose
                   <option value="Conselho Pedagógico (1º Bimestre)">Conselho Pedagógico (1º Bimestre)</option>
                   <option value="Conselho Pedagógico (2º Bimestre)">Conselho Pedagógico (2º Bimestre)</option>
                   <option value="Conselho Pedagógico (3º Bimestre)">Conselho Pedagógico (3º Bimestre)</option>
-                  <option value="Conselho Pedagógico (4º Bimestre)">Conselho Pedagógico (4º Bimestre)</option>
                   <option value="Conselho Final">Conselho Final</option>
                 </select>
               </label>

@@ -1,6 +1,6 @@
 "use client";
 
-import { MESES_PT, DOM_SEG_TER, TIPOS, DIAS_SEMANA_PT, CONFIG_TIPO, dateKey } from "../lib/constants";
+import { MESES_PT, DOM_SEG_TER, TIPOS, TIPOS_LETIVOS, DIAS_SEMANA_PT, CONFIG_TIPO, dateKey } from "../lib/constants";
 import { semanasDoMes, agruparNotas } from "../lib/calendarGrid";
 
 export default function MonthGrid({ ano, mes, dias, tipoCalendario, atividades = [], onDayMouseDown, onDayMouseEnter, anotacoesPorDia }) {
@@ -21,7 +21,7 @@ export default function MonthGrid({ ano, mes, dias, tipoCalendario, atividades =
       const key = dateKey(data);
       const info = dias[key] || { tipo: "fora" };
       const t = TIPOS[info.tipo] || TIPOS.letivo;
-      if (["letivo", "recuperacao", "substituicao", "sabado_letivo"].includes(info.tipo)) contadorLetivos += 1;
+      if (TIPOS_LETIVOS.has(info.tipo) && info.contaComo != null) contadorLetivos += 1;
 
       const temMarco = info.marcos && info.marcos.length > 0;
       const temMarcoPeriodo = temMarco && info.marcos.some(m => m.startsWith("inicio_periodo_") || m.startsWith("fim_periodo_") || m === "inicio_ano" || m === "fim_ano");

@@ -1341,3 +1341,34 @@ input, select {
 .mt-12 {
   margin-top: 12px;
 }
+
+/* ---------------- Campus Badges & Status Styling ---------------- */
+.badge-campus {
+  display: inline-block;
+  padding: 3px 8px;
+  background: #e2e8f0;
+  color: #1e293b;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.btn-success {
+  background: #10b981 !important;
+  color: #ffffff !important;
+  border-color: #059669 !important;
+}
+
+.modal-lg {
+  max-width: 900px !important;
+  width: 90vw !important;
+  border-radius: 12px !important;
+}
+
+.select-compact {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  font-size: 0.85rem;
+}
+
